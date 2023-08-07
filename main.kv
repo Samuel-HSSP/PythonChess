@@ -1,0 +1,600 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+#:import Gradient kivy_gradient.Gradient
+
+
+<FromMessage>:
+    rows: 3
+    size_hint: (None, None)
+    width: root.message_width
+    height: (len(recv_msg.text)/27)*85
+    padding: [20, 0]
+    pos_hint: {"center_x": .2, "center_y": .6}
+
+    MDLabel:
+        text: root.sender
+        theme_text_color: "Custom"
+        text_color: (0, 0, 0, 1)
+        halign: "left"
+        bold: True
+        pos_hint: {"center_x": .5}
+
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: 15
+        radius: [0, 10, 10, 10]
+        md_bg_color: root.bg_color
+
+        MDLabel:
+            id: recv_msg
+            text: root.message
+            theme_text_color: "Custom"
+            text_color: root.text_color
+            halign: "left"
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+    MDLabel:
+        text: "11:05 AM"
+        theme_text_color: "Custom"
+        text_color: (.77, .77, .77, 1)
+        halign: "right"
+        pos_hint: {"center_x": .5}
+        font_style: "Subtitle2"
+
+<ToMessage>:
+    rows: 3
+    size_hint: (None, None)
+    width: root.message_width
+    height: (len(sent_msg.text)/27)*85
+    padding: [20, 0]
+    pos_hint: {"center_x": .8, "center_y": .6}
+
+    MDLabel:
+        text: "You"
+        theme_text_color: "Custom"
+        text_color: (0, 0, 0, 1)
+        halign: "right"
+        bold: True
+        pos_hint: {"center_x": .5}
+
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: [15, 15]
+        radius: [20, 20, 0, 20]
+        md_bg_color: root.bg_color
+
+        canvas.before:
+            Color:
+                rgba: root.text_color
+            Line:
+                rounded_rectangle: self.x, self.y, self.width, self.height, 10, 0, 10, 10
+
+        MDLabel:
+            id: sent_msg
+            text: root.message
+            theme_text_color: "Custom"
+            text_color: root.text_color
+            halign: "left"
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+    MDLabel:
+        text: "11:05 AM"
+        theme_text_color: "Custom"
+        text_color: (.77, .77, .77, 1)
+        halign: "left"
+        pos_hint: {"center_x": .5}
+        font_style: "Subtitle2"
+    
+
+
+
+
+
+
+<Board>:
+<Player>:
+<Competitor>:
+    md_bg_color: app.white
+    size_hint_x: None
+    padding: 20
+
+    canvas.before:
+        Color:
+            rgba: app.white if root.color else app.black
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: [0, 25, 25, 0] if not root.color else [25, 0, 0, 25]
+        Color:
+            rgba: app.black if root.color else app.white
+        Ellipse:
+            size: (self.size[1], self.size[1])
+            pos: (self.size[0]-self.size[1]-65, self.pos[1]) if not root.color else self.pos
+            source: "Avatars/profile-pic.jpg" if not root.color else "Avatars/minecraft.jpg"
+        Color:
+            rgba: app.white if not root.color else app.black
+        Line:
+            width: 2
+            ellipse: (self.size[0]-self.size[1]-65, self.pos[1], self.size[1], self.size[1]) if not root.color else (self.pos[0], self.pos[1], self.size[1], self.size[1])
+                    
+    MDLabel:
+        text: root.player_name
+        bold: True
+        halign: "center"
+        font_style: "H5"
+        size_hint_y: None
+        theme_text_color: "Custom"
+        text_color: app.white if not root.color else app.black
+        pos_hint: {"center_x": .5, "center_y": .5}
+        font_name: "Fonts/metal_lord/ot/metal lord.otf"
+
+
+<MainMenuButton>:
+    focus_behavior: True
+    ripple_behavior: True
+    pos_hint: {"center_x": .5, "center_y": .5}
+    md_bg_color: app.white
+    radius: [15,]
+    unfocus_color: app.white
+    focus_color: app.black
+    height: label.height
+    size_hint_x: .7
+    elevation: 3
+    on_enter:
+        label.text_color = app.white
+    on_leave:
+        label.text_color = app.black
+
+    MDLabel:
+        id: label
+        text: root.text
+        bold: True
+        halign: "center"
+        font_style: "H6"
+        size_hint_y: None
+        theme_text_color: "Custom"
+        text_color: app.black
+        pos_hint: {"center_x": .5, "center_y": .5}
+        font_name: "Fonts/metal_lord/ot/metal lord.otf"
+
+
+<ChessLabel>:
+    font_size: 16
+    halign: "center"
+    font_name: "Minecraft-Regular"
+
+<Piece>:
+    size_hint: (1, 1)
+    color: (1, 1, 1, 0) if root.empty and root.source == "" else (1, 1, 1, 1)
+    empty: True if root.source == "" else False
+
+<OutPiece>:
+    size_hint: (1, 1)
+
+<Place>:
+    canvas.before:
+        Color:
+            rgba: root.color if not root.selected and not root.legal and not root.moved and not root.check else app.get_color(root.color, root.selected, root.legal, root.moved, root.check, root.capturable)
+        Rectangle:
+            size: self.size
+            pos: self.pos
+        Color:
+            rgba: (1, 1, 1, 1) if root.legal else (1, 1, 1, 0)
+        Line:
+            width: 0.7
+            rectangle: self.x, self.y, self.width, self.height
+        Color:
+            rgba: (0, 0, 0, .2) if root.capturable or root.moved or root.check else (0, 0, 0, 0)
+        Ellipse
+            size: self.size
+            pos: self.pos
+
+
+ScreenManager:
+    id: sm
+
+    Screen:
+        name: "home"
+        
+        MDFloatLayout:
+            id: home_container
+            md_bg_color: (.9, .9, .9, 1)
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDBoxLayout:
+                orientation: "vertical"
+                spacing: 10
+
+                canvas.before:
+                    Color:
+                        rgba: [1, 1, 1, 1]
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+                        source: "Backgrounds/jason-lee.jpg"
+
+                MDLabel:
+                    text: "Chess for Two"
+                    bold: True
+                    halign: "center"
+                    font_style: "H3"
+                    size_hint_y: None
+                    theme_text_color: "Custom"
+                    text_color: app.black
+                    outline_width: 3
+                    outline_color: app.white
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    font_name: "Fonts/metal_lord/ot/metal lord.otf"
+
+                MDFloatLayout:
+                    size_hint_x: .65
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    md_bg_color: [0, 0, 0, .6]
+                    radius: [20,]
+
+                    MDBoxLayout:
+                        orientation: "vertical"
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                        size_hint_y: 1
+                        spacing: 20
+
+                        MDBoxLayout:
+                            size_hint_y: .02
+                    
+                        MainMenuButton:
+                            text: "Host Game"
+                            pos_hint: {"center_x": .5}
+                            on_release:
+                                app.ui_btn_clicked()
+                                sm.current = "start"
+
+                        MainMenuButton:
+                            text: "Join Game"
+                            pos_hint: {"center_x": .5}
+                            on_release:
+                                app.ui_btn_clicked()
+                                sm.current = "chess"
+
+                        MainMenuButton:
+                            text: "Game Settings"
+                            pos_hint: {"center_x": .5}
+                            on_release:
+                                app.ui_btn_clicked()
+                                sm.current = "settings"
+
+                        MainMenuButton:
+                            text: "Exit"
+                            pos_hint: {"center_x": .5}
+                            on_release:
+                                app.ui_btn_clicked()
+                                sm.current = "chess"
+
+                        MDBoxLayout:
+                            size_hint_y: .02
+
+                MDBoxLayout:
+                    size_hint_y: .02
+
+                    canvas.before:
+                        Color:
+                            rgba: [0, 0, 0, .4]
+                        Rectangle:
+                            pos: self.pos
+                            size: self.size
+
+                    MDLabel:
+                        text: "Made By SamuelHSSP"
+                        bold: True
+                        halign: "center"
+                        font_style: "Body1"
+                        size_hint_y: None
+                        theme_text_color: "Custom"
+                        text_color: app.white
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+    Screen:
+        name: "start"
+        
+        MDFloatLayout:
+            id: start_container
+            md_bg_color: (.9, .9, .9, 1)
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDBoxLayout:
+                orientation: "vertical"
+                spacing: 10
+
+                canvas.before:
+                    Color:
+                        rgba: [1, 1, 1, 1]
+                    Rectangle:
+                        size: self.size
+                        pos: self.pos
+                        source: "Backgrounds/jason-lee.jpg"
+
+                MDLabel:
+                    text: "Chess for Two"
+                    bold: True
+                    halign: "center"
+                    font_style: "H3"
+                    size_hint_y: None
+                    theme_text_color: "Custom"
+                    text_color: app.black
+                    outline_width: 3
+                    outline_color: app.white
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    font_name: "Fonts/metal_lord/ot/metal lord.otf"
+
+                MDBoxLayout:
+                    orientation: "vertical"
+                    size_hint_x: 1
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    radius: [20,]
+                    spacing: 5
+
+                    Competitor:
+                        player_name: "SamuelHSSP"
+                        color: False
+                        size_hint_y: .3
+                        width: (start_container.width/2)+50
+                        pos_hint: {"center_x": .2, "center_y": .8}
+
+                    MDLabel:
+                        text: "Vs."
+                        bold: True
+                        halign: "center"
+                        font_style: "H2"
+                        size_hint_y: None
+                        theme_text_color: "Custom"
+                        text_color: app.black
+                        outline_width: 3
+                        outline_color: app.white
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                        font_name: "Fonts/metal_lord/ot/metal lord.otf"
+
+                    Competitor:
+                        player_name: "Ronaldo"
+                        color: True
+                        size_hint_y: .3
+                        width: (start_container.width/2)+50
+                        pos_hint: {"center_x": .8, "center_y": .2}
+
+                    MDBoxLayout:
+                        size_hint_y: .02
+                    
+                    MainMenuButton:
+                        text: "Start"
+                        pos_hint: {"center_x": .5, "center_y": .15}
+                        size_hint_y: None
+                        height: 70
+                        on_release:
+                            sm.current = "chess"
+
+                    MDBoxLayout:
+                        size_hint_y: .02
+    Screen:
+        name: "chess"
+
+        MDFloatLayout:
+            id: container
+           # md_bg_color: (.9, .9, .9, 1)
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+            canvas.before:
+                Color:
+                    rgba: [1, 1, 1, 1]
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+                    source: "Backgrounds/jason-lee.jpg"
+
+            MDBoxLayout:
+                orientation: "vertical"
+
+                OneLineAvatarListItem:
+                    id: player_black
+                    text: "SamuelHSSP" # "{app.draw_player_name(app.black_player_name, app.killed_whites)}"
+                    theme_text_color: "Custom"
+                    text_color: layout.theme_white_color
+                    markup: True
+
+                    canvas.before:
+                        Color:
+                            rgba: [0, 0, 0, 1]
+                        Rectangle:
+                            size: self.size
+                            pos: self.pos
+
+                    ImageLeftWidget:
+                        source: "Avatars/profile-pic.jpg"
+
+                MDBoxLayout:
+                    spacing: 20
+
+                    Board:
+                        id: layout
+                        cols: 9
+                        size_hint: (None, None)
+                        pos_hint: {"center_x": .5}
+                        halign: "center"
+                        theme_black_color: app.black
+                        theme_white_color: app.white
+                        size: (container.height-(player_black.height+player_white.height), container.height-(player_black.height+player_white.height))
+
+                    MDBoxLayout:
+                        id: game_info
+                        orientation: "vertical"
+                        md_bg_color: layout.theme_white_color
+                        opacity: 1
+
+                    #    MDBoxLayout:
+                    #        orientation: "vertical"
+                    #        size_hint_y: .7
+                    #        md_bg_color: layout.theme_black_color
+
+
+                        MDLabel:
+                            text: "In-Game Messages"
+                            theme_text_color: "Custom"
+                            text_color: (0, 0, 0, 1)
+                            halign: "center"
+                            size_hint_y: .05
+                            font_style: "H6"
+                            pos_hint: {"center_x": .5, "top": .8}
+
+                            canvas.before:
+                                Color:
+                                    rgba: layout.theme_white_color
+                                Rectangle:
+                                    pos: self.pos
+                                    size: self.size
+                
+                        ScrollView:
+                            MDBoxLayout:
+                                id: ingame_messages
+                                orientation: "vertical"
+                                adaptive_height: True
+
+                                FromMessage:
+                                    sender: "SamuelHSSP"
+                                    message: "You can't ever beat me! I am going to make sure you go down! Forget it! Ronaldo!"
+                                    message_width: game_info.width/4
+                                    bg_color: layout.theme_black_color
+                                    text_color: layout.theme_white_color
+
+                                FromMessage:
+                                    sender: "SamuelHSSP"
+                                    message: "You are going down, CR7!"
+                                    message_width: game_info.width/4
+                                    bg_color: layout.theme_black_color
+                                    text_color: layout.theme_white_color
+
+                                ToMessage:
+                                    message: "Are you sure about that?"
+                                    message_width: game_info.width/4
+                                    bg_color: [1, 1, 1, 0]
+                                    text_color: layout.theme_black_color
+
+                        
+                        MDSeparator:
+                            height: 2
+                            size_hint: (1, None)
+                            pos_hint: {"center_y": .2}
+
+                        MDBoxLayout:
+                            padding: [10, 10]
+                            pos_hint: {"bottom": 1}
+                            spacing: 10
+                            md_bg_color: [1, 1, 1, 1]
+                            size_hint_y: None
+                            height: msg.height
+
+                            MDTextField:
+                                id: msg
+                                hint_text: "Write a message"
+                                md_bg_color: layout.theme_white_color
+                                fill_color_normal: layout.theme_white_color
+                                line_color_normal: layout.theme_white_color
+                                line_color_focus: layout.theme_black_color
+                                text_color_normal: layout.theme_black_color
+                                text_color_focus: [0, 0, 0, 1]
+                                hint_text_color_focus: layout.theme_black_color
+                                pos_hint: {"center_y": .5}
+                                height: 200
+                                on_text_validate:
+                                    app.send_message(self.text)
+
+                            MDIconButton:
+                                icon: "microphone-outline"
+                                theme_text_color: "Custom"
+                                text_color: layout.theme_black_color
+                                disabled: True if msg.text != "" else False
+                                pos_hint: {"center_y": .5}
+                            
+                            MDIconButton:
+                                icon: "send-outline"
+                                theme_text_color: "Custom"
+                                text_color: layout.theme_black_color if msg.text != "" else [1, 1, 1, 1]
+                                disabled: False if msg.text != "" else True
+                                pos_hint: {"center_y": .5}
+
+                OneLineAvatarIconListItem:
+                    id: player_white
+                    text: "Ronaldo" # "{app.draw_player_name(app.white_player_name, app.killed_blacks)}"
+                    theme_text_color: "Custom"
+                    markup: True
+                    text_color: [0, 0, 0, 1]
+
+                    canvas.before:
+                        Color:
+                            rgba: layout.theme_white_color
+                        Rectangle:
+                            size: self.size
+                            pos: self.pos
+                    
+                    ImageLeftWidget:
+                        source: "Avatars/minecraft.jpg"
+                    
+                    IconRightWidget:
+                        icon: "palette"
+                        theme_text_color: "Custom"
+                        text_color: app.black
+                        on_release:
+                            app.change_theme()
+
+                    IconRightWidget:
+                        icon: "backburger"
+                        theme_text_color: "Custom"
+                        text_color: app.black
+                        on_release:
+
+                    IconRightWidget:
+                        icon: "music"
+                        theme_text_color: "Custom"
+                        text_color: app.black
+                        on_release:
+
+                    IconRightWidget:
+                        icon: "cog-outline"
+                        theme_text_color: "Custom"
+                        text_color: app.black
+                        on_release:
+                            app.settings_screen()
+
+            MDFloatLayout:
+                id: outcome_container
+                md_bg_color: [app.white[0], app.white[1], app.white[2], 0]
+                size_hint: (1, .2)
+                pos_hint: {"center_x": .5, "center_y": .5}
+            
+                MDLabel:
+                    id: outcome
+                    text: "Game Over!"
+                    bold: True
+                    halign: "center"
+                    sizing: 50
+                    font_size: self.sizing
+                    size_hint_y: None
+                    size: self.texture_size
+                    theme_text_color: "Custom"
+                    text_color: [0, 0, 0, 0]
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    font_name: "Fonts/minecraft-3-cufonfonts/1_MinecraftRegular1.otf"
+
+    Screen:
+        name: "settings"
+
+        MDFloatLayout:
+            id: settings_container
+            md_bg_color: (.9, .9, .9, 1)
+            pos_hint: {"center_x": .5, "center_y": .5}
+
+            MDBoxLayout:
+                orientation: "vertical"
+
+                MDTopAppBar:
+                    id: settings_toolbar
+                    title: "Settings"
+                    left_action_items: [["arrow-left", lambda x: app.back_home()]]
+                    elevation: 0
+                    pos_hint: {"top": 1}
+                    md_bg_color: layout.theme_black_color
