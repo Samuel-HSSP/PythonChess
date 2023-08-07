@@ -2,6 +2,7 @@
 A chess game completely built in Python
 
 ## Project File Structure
+```
 PythonChess
   |__main.py
   |__main.kv
